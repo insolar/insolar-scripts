@@ -82,7 +82,7 @@ fi
 build_logger()
 {
     echo "build logger binaries"
-    go get github.com/insolar/insolar/scripts/inslogrotator
+    GOFLAGS='' go get github.com/insolar/insolar/scripts/inslogrotator
 }
 
 kill_port()

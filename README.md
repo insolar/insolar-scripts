@@ -1,16 +1,17 @@
 # Deploy insolar platform locally
+Use this repository as submodule for your insolar application.
 
 ## How to start launchnet and monitor
 
 To run launchnet, you must provide several files:
 
-`/scripts/insolard/bootstrap_template.yaml` - template for bootstrap config
+`./scripts/insolard/bootstrap_template.yaml` - template for bootstrap config
 
-`/scripts/insolard/generate_initial_data.sh` - script, which creates init data for application (members keys, migration addresses, etc.)
+`./scripts/insolard/generate_initial_data.sh` - script, which creates init data for application (members keys, migration addresses, etc.)
 
-`/bin/insolard` - insolard binary
+`./bin/insolard` - insolard binary
 
-`/bin/insolard` - insolard binary
+`./bin/insolard` - insolard binary
 
 Make file must containes:
 
