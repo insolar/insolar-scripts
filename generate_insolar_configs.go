@@ -39,20 +39,20 @@ var (
 	nodeCertificatePathTemplate      = "nodes/%d/cert.json"
 	pulsewatcherFileName             = withBaseDir("pulsewatcher.yaml")
 
-	prometheusConfigTmpl = "scripts/prom/server.yml.tmpl"
+	prometheusConfigTmpl = "insolar-scripts/prom/server.yml.tmpl"
 	prometheusFileName   = "prometheus.yaml"
 
-	bootstrapConfigTmpl = "scripts/insolard/bootstrap_template.yaml"
+	bootstrapConfigTmpl = "insolar-scripts/insolard/bootstrap_template.yaml"
 	bootstrapFileName   = withBaseDir("bootstrap.yaml")
 
-	pulsardConfigTmpl = "scripts/insolard/pulsar_template.yaml"
+	pulsardConfigTmpl = "insolar-scripts/insolard/pulsar_template.yaml"
 	pulsardFileName   = withBaseDir("pulsar.yaml")
 
-	keeperdConfigTmpl = "scripts/insolard/keeperd_template.yaml"
+	keeperdConfigTmpl = "insolar-scripts/insolard/keeperd_template.yaml"
 	keeperdFileName   = withBaseDir("keeperd.yaml")
 
-	insolardDefaultsConfigWithBadger   = "scripts/insolard/defaults/insolard_badger.yaml"
-	insolardDefaultsConfigWithPostgres = "scripts/insolard/defaults/insolard_postgres.yaml"
+	insolardDefaultsConfigWithBadger   = "insolar-scripts/insolard/defaults/insolard_badger.yaml"
+	insolardDefaultsConfigWithPostgres = "insolar-scripts/insolard/defaults/insolard_postgres.yaml"
 )
 
 var (
@@ -73,11 +73,6 @@ func parseInputParams() {
 
 	err := rootCmd.Execute()
 	check("Wrong input params:", err)
-
-	if gorundPortsPath == "" {
-		err := rootCmd.Usage()
-		check("[ parseInputParams ]", err)
-	}
 }
 
 func writeGorundPorts(gorundPorts [][]string) {
@@ -227,7 +222,9 @@ func main() {
 	writePromConfig(promVars)
 	writeInsolardConfigs(filepath.Join(outputDir, "/discoverynodes"), discoveryNodesConfigs)
 	writeInsolardConfigs(filepath.Join(outputDir, "/nodes"), nodesConfigs)
-	writeGorundPorts(gorundPorts)
+	if gorundPortsPath != "" {
+		writeGorundPorts(gorundPorts)
+	}
 
 	pulsarConf := &pulsarConfigVars{}
 	pulsarConf.DataDir = withBaseDir("pulsar_data")
