@@ -42,7 +42,7 @@ var (
 	prometheusConfigTmpl = "insolar-scripts/prom/server.yml.tmpl"
 	prometheusFileName   = "prometheus.yaml"
 
-	bootstrapConfigTmpl = "insolar-scripts/insolard/bootstrap_template.yaml"
+	bootstrapConfigTmpl = "scripts/insolard/bootstrap_template.yaml"
 	bootstrapFileName   = withBaseDir("bootstrap.yaml")
 
 	pulsardConfigTmpl = "insolar-scripts/insolard/pulsar_template.yaml"
