@@ -151,7 +151,7 @@ func main() {
 
 			if len(os.Getenv("POSTGRES_ENABLE")) > 0 {
 				fmt.Println("[createHeavyConfig] Using PostgreSQL config")
-				holder := *configuration.NewHolderHeavyPg(insolardDefaultsConfigWithPostgres).MustLoad()
+				holder := *configuration.NewHeavyPgHolder(insolardDefaultsConfigWithPostgres).MustLoad()
 				conf := holder.Configuration
 				conf.GenericConfiguration = genericConfiguration
 
@@ -160,7 +160,7 @@ func main() {
 				pwConfig.Nodes = append(pwConfig.Nodes, conf.AdminAPIRunner.Address)
 			} else {
 				fmt.Println("[newDefaultInsolardConfig] Using Badger config")
-				holder := *configuration.NewHolderHeavyBadger(insolardDefaultsConfigWithBadger).MustLoad()
+				holder := *configuration.NewHeavyBadgerHolder(insolardDefaultsConfigWithBadger).MustLoad()
 				conf := holder.Configuration
 				conf.Ledger.Storage.DataDirectory = fmt.Sprintf(discoveryDataDirectoryTemplate, nodeIndex)
 				conf.GenericConfiguration = genericConfiguration
@@ -186,14 +186,14 @@ func main() {
 
 		if node.Role == "heavy_material" {
 			if len(os.Getenv("POSTGRES_ENABLE")) > 0 {
-				heavyConfig := configuration.NewConfigurationHeavyPg()
+				heavyConfig := configuration.NewHeavyPgConfig()
 				heavyConfig.GenericConfiguration = genericConfiguration
 
 				nodesConfigs = append(nodesConfigs, genericConfiguration)
 				promVars.addTarget("insolard", genericConfiguration.Metrics.ListenAddress)
 				pwConfig.Nodes = append(pwConfig.Nodes, genericConfiguration.AdminAPIRunner.Address)
 			} else {
-				heavyConfig := configuration.NewConfigurationHeavyBadger()
+				heavyConfig := configuration.NewHeavyBadgerConfig()
 				heavyConfig.Ledger.Storage.DataDirectory = fmt.Sprintf(nodeDataDirectoryTemplate, nodeIndex)
 				heavyConfig.GenericConfiguration = genericConfiguration
 
@@ -205,7 +205,7 @@ func main() {
 		}
 
 		if node.Role == "virtual" {
-			virtualConfig := configuration.NewConfigurationVirtual()
+			virtualConfig := configuration.NewVirtualConfig()
 			rpcListenPort := 34300 + (index+nodeIndex+len(bootstrapConf.DiscoveryNodes)+1)*nodeIndex
 			virtualConfig.LogicRunner = configuration.NewLogicRunner()
 			virtualConfig.LogicRunner.GoPlugin.RunnerListen = fmt.Sprintf(defaultHost+":%d", rpcListenPort-1)
@@ -293,8 +293,8 @@ func createGenericConfigJoiner(node bootstrap.Node, nodeIndex int, bootstrapConf
 	return genericConfiguration
 }
 
-func createLightConfig() configuration.ConfigLight {
-	conf := configuration.NewConfigurationLight()
+func createLightConfig() configuration.LightConfig {
+	conf := configuration.NewLightConfig()
 
 	conf.Ledger.JetSplit.ThresholdRecordsCount = 1
 	conf.Ledger.JetSplit.ThresholdOverflowCount = 0
@@ -302,8 +302,8 @@ func createLightConfig() configuration.ConfigLight {
 	return conf
 }
 
-func createVirtualConfig(index, nodeIndex int) configuration.ConfigVirtual {
-	conf := configuration.NewConfigurationVirtual()
+func createVirtualConfig(index, nodeIndex int) configuration.VirtualConfig {
+	conf := configuration.NewVirtualConfig()
 
 	rpcListenPort := 33300 + (index+nodeIndex)*nodeIndex
 	conf.LogicRunner = configuration.NewLogicRunner()
