@@ -12,7 +12,6 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"strconv"
 	"strings"
 	"time"
 
@@ -57,9 +56,8 @@ var (
 )
 
 var (
-	outputDir       string
-	debugLevel      string
-	gorundPortsPath string
+	outputDir  string
+	debugLevel string
 )
 
 func parseInputParams() {
@@ -69,20 +67,9 @@ func parseInputParams() {
 		&outputDir, "output", "o", baseDir(), "output directory")
 	rootCmd.Flags().StringVarP(
 		&debugLevel, "debuglevel", "d", "Debug", "debug level")
-	rootCmd.Flags().StringVarP(
-		&gorundPortsPath, "gorundports", "p", "", "path to insgorund ports (required)")
 
 	err := rootCmd.Execute()
 	check("Wrong input params:", err)
-}
-
-func writeGorundPorts(gorundPorts [][]string) {
-	var portsData string
-	for _, ports := range gorundPorts {
-		portsData += ports[0] + " " + ports[1] + "\n"
-	}
-	err := makeFileWithDir("./", gorundPortsPath, portsData)
-	check("failed to create gorund ports file: "+gorundPortsPath, err)
 }
 
 func writeInsolardConfigs(dir string, insolardConfigs []configuration.Configuration) {
@@ -113,8 +100,6 @@ func main() {
 	pwConfig := pulsewatcher.Config{}
 	discoveryNodesConfigs := make([]configuration.Configuration, 0, len(bootstrapConf.DiscoveryNodes))
 
-	var gorundPorts [][]string
-
 	promVars := &promConfigVars{
 		Jobs: map[string][]string{},
 	}
@@ -130,13 +115,7 @@ func main() {
 		conf.Host.Transport.Address = node.Host
 		conf.Host.Transport.Protocol = "TCP"
 
-		rpcListenPort := 33300 + (index+nodeIndex)*nodeIndex
 		conf.LogicRunner = configuration.NewLogicRunner()
-		conf.LogicRunner.GoPlugin.RunnerListen = fmt.Sprintf(defaultHost+":%d", rpcListenPort-1)
-		conf.LogicRunner.RPCListen = fmt.Sprintf(defaultHost+":%d", rpcListenPort)
-		if node.Role == "virtual" {
-			gorundPorts = append(gorundPorts, []string{strconv.Itoa(rpcListenPort - 1), strconv.Itoa(rpcListenPort)})
-		}
 
 		if node.Role == "light_material" {
 			conf.Ledger.JetSplit.ThresholdRecordsCount = 1
@@ -187,14 +166,6 @@ func main() {
 		conf.Host.Transport.Address = node.Host
 		conf.Host.Transport.Protocol = "TCP"
 
-		rpcListenPort := 34300 + (index+nodeIndex+len(bootstrapConf.DiscoveryNodes)+1)*nodeIndex
-		conf.LogicRunner = configuration.NewLogicRunner()
-		conf.LogicRunner.GoPlugin.RunnerListen = fmt.Sprintf(defaultHost+":%d", rpcListenPort-1)
-		conf.LogicRunner.RPCListen = fmt.Sprintf(defaultHost+":%d", rpcListenPort)
-		if node.Role == "virtual" {
-			gorundPorts = append(gorundPorts, []string{strconv.Itoa(rpcListenPort - 1), strconv.Itoa(rpcListenPort)})
-		}
-
 		conf.APIRunner.Address = fmt.Sprintf(defaultHost+":191%02d", nodeIndex+len(bootstrapConf.DiscoveryNodes))
 		conf.AdminAPIRunner.Address = fmt.Sprintf(defaultHost+":190%02d", nodeIndex+len(bootstrapConf.DiscoveryNodes))
 		conf.Metrics.ListenAddress = fmt.Sprintf(defaultHost+":80%02d", nodeIndex+len(bootstrapConf.DiscoveryNodes))
@@ -219,9 +190,6 @@ func main() {
 	writePromConfig(promVars)
 	writeInsolardConfigs(filepath.Join(outputDir, "/discoverynodes"), discoveryNodesConfigs)
 	writeInsolardConfigs(filepath.Join(outputDir, "/nodes"), nodesConfigs)
-	if gorundPortsPath != "" {
-		writeGorundPorts(gorundPorts)
-	}
 
 	pulsarConf := &pulsarConfigVars{}
 	pulsarConf.DataDir = withBaseDir("pulsar_data")
