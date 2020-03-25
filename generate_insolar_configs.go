@@ -12,7 +12,6 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"strconv"
 	"strings"
 	"time"
 
@@ -56,9 +55,8 @@ var (
 )
 
 var (
-	outputDir       string
-	debugLevel      string
-	gorundPortsPath string
+	outputDir  string
+	debugLevel string
 )
 
 func parseInputParams() {
@@ -68,20 +66,9 @@ func parseInputParams() {
 		&outputDir, "output", "o", baseDir(), "output directory")
 	rootCmd.Flags().StringVarP(
 		&debugLevel, "debuglevel", "d", "Debug", "debug level")
-	rootCmd.Flags().StringVarP(
-		&gorundPortsPath, "gorundports", "p", "", "path to insgorund ports (required)")
 
 	err := rootCmd.Execute()
 	check("Wrong input params:", err)
-}
-
-func writeGorundPorts(gorundPorts [][]string) {
-	var portsData string
-	for _, ports := range gorundPorts {
-		portsData += ports[0] + " " + ports[1] + "\n"
-	}
-	err := makeFileWithDir("./", gorundPortsPath, portsData)
-	check("failed to create gorund ports file: "+gorundPortsPath, err)
 }
 
 func writeInsolardConfigs(dir string, insolardConfigs []interface{}) {
@@ -112,8 +99,6 @@ func main() {
 	pwConfig := pulsewatcher.Config{}
 	discoveryNodesConfigs := make([]interface{}, 0, len(bootstrapConf.DiscoveryNodes))
 
-	var gorundPorts [][]string
-
 	promVars := &promConfigVars{
 		Jobs: map[string][]string{},
 	}
@@ -136,12 +121,8 @@ func main() {
 			pwConfig.Nodes = append(pwConfig.Nodes, configLight.AdminAPIRunner.Address)
 
 		case "virtual":
-			configVirtual := createVirtualConfig(index, nodeIndex)
+			configVirtual := createVirtualConfig()
 			configVirtual.GenericConfiguration = genericConfiguration
-
-			rpcListenPort := 33300 + (index+nodeIndex)*nodeIndex
-			gorundPorts = append(gorundPorts, []string{strconv.Itoa(rpcListenPort - 1), strconv.Itoa(rpcListenPort)})
-
 			discoveryNodesConfigs = append(discoveryNodesConfigs, configVirtual)
 			promVars.addTarget("insolard", configVirtual.Metrics.ListenAddress)
 			pwConfig.Nodes = append(pwConfig.Nodes, configVirtual.AdminAPIRunner.Address)
@@ -206,13 +187,9 @@ func main() {
 
 		if node.Role == "virtual" {
 			virtualConfig := configuration.NewVirtualConfig()
-			rpcListenPort := 34300 + (index+nodeIndex+len(bootstrapConf.DiscoveryNodes)+1)*nodeIndex
 			virtualConfig.LogicRunner = configuration.NewLogicRunner()
-			virtualConfig.LogicRunner.GoPlugin.RunnerListen = fmt.Sprintf(defaultHost+":%d", rpcListenPort-1)
-			virtualConfig.LogicRunner.RPCListen = fmt.Sprintf(defaultHost+":%d", rpcListenPort)
 			virtualConfig.GenericConfiguration = genericConfiguration
 
-			gorundPorts = append(gorundPorts, []string{strconv.Itoa(rpcListenPort - 1), strconv.Itoa(rpcListenPort)})
 			nodesConfigs = append(nodesConfigs, genericConfiguration)
 			promVars.addTarget("insolard", genericConfiguration.Metrics.ListenAddress)
 			pwConfig.Nodes = append(pwConfig.Nodes, genericConfiguration.AdminAPIRunner.Address)
@@ -222,9 +199,6 @@ func main() {
 	writePromConfig(promVars)
 	writeInsolardConfigs(filepath.Join(outputDir, "/discoverynodes"), discoveryNodesConfigs)
 	writeInsolardConfigs(filepath.Join(outputDir, "/nodes"), nodesConfigs)
-	if gorundPortsPath != "" {
-		writeGorundPorts(gorundPorts)
-	}
 
 	pulsarConf := &pulsarConfigVars{}
 	pulsarConf.DataDir = withBaseDir("pulsar_data")
@@ -302,13 +276,9 @@ func createLightConfig() configuration.LightConfig {
 	return conf
 }
 
-func createVirtualConfig(index, nodeIndex int) configuration.VirtualConfig {
+func createVirtualConfig() configuration.VirtualConfig {
 	conf := configuration.NewVirtualConfig()
-
-	rpcListenPort := 33300 + (index+nodeIndex)*nodeIndex
 	conf.LogicRunner = configuration.NewLogicRunner()
-	conf.LogicRunner.GoPlugin.RunnerListen = fmt.Sprintf(defaultHost+":%d", rpcListenPort-1)
-	conf.LogicRunner.RPCListen = fmt.Sprintf(defaultHost+":%d", rpcListenPort)
 	return conf
 }
 
