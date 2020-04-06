@@ -24,9 +24,9 @@ DISCOVERY_NODE_LOGS=${LAUNCHNET_LOGS_DIR}discoverynodes/
 BIN_DIR=bin
 INSOLAR_CLI=${BIN_DIR}/insolar
 INSOLARD=$BIN_DIR/insolard
-KEEPERD=keeperd
-PULSARD=pulsard
-PULSEWATCHER=pulsewatcher
+KEEPERD=$BIN_DIR/keeperd
+PULSARD=$BIN_DIR/pulsard
+PULSEWATCHER=$BIN_DIR/pulsewatcher
 
 # DUMP_METRICS_ENABLE enables metrics dump to logs dir after every functest
 DUMP_METRICS_ENABLE=${DUMP_METRICS_ENABLE:-"1"}
@@ -183,10 +183,8 @@ build_binaries()
     echo "build binaries"
     set -x
     export BUILD_TAGS
+    make install-deps
     make build
-    GOFLAGS='' go get github.com/insolar/insolar/cmd/pulsard
-    GOFLAGS='' go get github.com/insolar/insolar/cmd/pulsewatcher
-    GOFLAGS='' go get github.com/insolar/insolar/cmd/keeperd
     { set +x; } 2>/dev/null
 }
 
