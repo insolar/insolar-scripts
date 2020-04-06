@@ -9,13 +9,15 @@ To run launchnet, you must provide several files:
 
 `./scripts/insolard/generate_initial_data.sh` - script, which creates init data for application (members keys, migration addresses, etc.)
 
-`./bin/insolard` - insolard binary
+`./bin/insolar` - insolar binary
 
 `./bin/insolard` - insolard binary
 
 Make file must containes:
 
 `make build` build binaries
+
+`make install-deps` build dependencies (binaries pulsard, keeperd and pulsewatcher, must be in ./bin dir)
 
 `make clean` clear binaries
 
