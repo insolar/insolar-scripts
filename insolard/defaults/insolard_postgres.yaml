@@ -14,7 +14,7 @@ databasetype: postgres
 ledger:
   postgresql:
     url: postgres://postgres:s3cr3t@localhost/insolar?sslmode=disable&pool_max_conns=10
-    migrationpath: ./migration
+    migrationpath: ./insolar-scripts/migration
 log:
   level: Info
   adapter: zerolog
