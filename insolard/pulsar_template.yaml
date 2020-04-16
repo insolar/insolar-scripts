@@ -1,10 +1,5 @@
 pulsar:
   pulsetime: 10000
-  receivingsigntimeout: 1000
-  receivingnumbertimeout: 1000
-  receivingvectortimeout: 1000
-  receivingsignsforchosentimeout: 0
-  neighbours: []
   numberdelta: 10
   distributiontransport:
     protocol: TCP
@@ -15,10 +10,7 @@ pulsar:
 {{-  range .BootstrapHosts }}
       - {{ . }}
 {{- end }}
-    pingrequesttimeout: 1000
-    randomhostsrequesttimeout: 1000
     pulserequesttimeout: 1000
-    randomnodescount: 5
 keyspath: "{{ .BaseDir }}/configs/pulsar_keys.json"
 tracer:
   jaeger:
@@ -30,5 +22,4 @@ metrics:
   namespace: insolar
   zpagesenabled: false
   reportingperiod: 0s
-log:
-  level: debug
+loglevel: debug
