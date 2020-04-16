@@ -91,7 +91,13 @@ kill_port()
         echo -n "killing pid $pid at "
         date
         kill $pid || true
+        tries=0
         while lsof -i :$port; do
+            if [ $tries == 30 ];
+            then
+                break
+            fi
+            tries=$((tries + 1))
             sleep 1
         done
     done
