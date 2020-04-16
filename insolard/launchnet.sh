@@ -91,14 +91,9 @@ kill_port()
         echo -n "killing pid $pid at "
         date
         kill $pid || true
-        tries=0
-        while lsof -i :$port; do
-            if [ $tries == 30 ];
-            then
-                break
-            fi
-            tries=$((tries + 1))
-            sleep 1
+        for i in {1..30}; do
+            [[ $(lsof -i :${port}) ]] && sleep 1 || break
+            echo -n "wait $i"
         done
     done
 }
