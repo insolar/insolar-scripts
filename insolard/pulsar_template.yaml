@@ -22,4 +22,12 @@ metrics:
   namespace: insolar
   zpagesenabled: false
   reportingperiod: 0s
-loglevel: debug
+log:
+  Level:               "Info"
+  Adapter:             "zerolog"
+  Formatter:           "json"
+  OutputType:          "stderr"
+  BufferSize:          0
+  OutputParallelLimit: 0
+  OutputParams:        ""
+  LLBufferSize:        0
