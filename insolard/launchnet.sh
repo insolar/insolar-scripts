@@ -91,6 +91,10 @@ kill_port()
         echo -n "killing pid $pid at "
         date
         kill $pid || true
+        for i in {1..30}; do
+            [[ $(lsof -i :${port}) ]] && sleep 1 || break
+            echo -n "wait $i"
+        done
     done
 }
 
