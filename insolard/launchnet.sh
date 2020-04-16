@@ -91,6 +91,9 @@ kill_port()
         echo -n "killing pid $pid at "
         date
         kill $pid || true
+        while lsof -i :$port; do
+            sleep 1
+        done
     done
 }
 
