@@ -113,6 +113,12 @@ stop_listening()
     ports="$ports 58090" # Pulsar
 
     transport_ports=$( grep "host:" ${BOOTSTRAP_CONFIG} | grep -o ":\d\+" | grep -o "\d\+" | tr '\n' ' ' )
+    echo "transport_ports values 0 $BOOTSTRAP_CONFIG"
+    echo "transport_ports values 1 $( grep "host:" ${BOOTSTRAP_CONFIG})"
+    echo "transport_ports values 2 $( grep "host:" ${BOOTSTRAP_CONFIG} | grep -o ":\d\+" )"
+    echo "transport_ports values 3 $( grep "host:" ${BOOTSTRAP_CONFIG} | grep -o ":\d\+" | grep -o "\d\+" )"
+    echo "transport_ports values 4 $( grep "host:" ${BOOTSTRAP_CONFIG} | grep -o ":\d\+" | grep -o "\d\+" | tr '\n' ' ' )"
+    echo "transport_ports values 5 $transport_ports"
     keeperd_port=$( grep "listenaddress:" ${KEEPERD_CONFIG} | grep -o ":\d\+" | grep -o "\d\+" | tr '\n' ' ' )
     ports="$ports $transport_ports $keeperd_port"
 
