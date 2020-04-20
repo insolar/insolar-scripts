@@ -82,19 +82,20 @@ build_logger()
     GO111MODULE=off go get github.com/insolar/insolar/scripts/inslogrotator
 }
 
-kill_port()
+kill_process()
 {
-    port=$1
-    pids=$(lsof -i :$port 2>/dev/null | grep "LISTEN\|UDP" | awk '{print $2}')
+    process=$1
+    echo "kill_process(): starts for $process"
+    pids=$(ps ax 2>/dev/null | grep $process | grep -v grep |  awk '{print $1}')
     for pid in $pids
     do
         echo -n "killing pid $pid at "
         date
         kill $pid || true
-        for i in {1..30}; do
-            [[ $(lsof -i :${port}) ]] && sleep 1 || break
-            echo -n "wait $i"
-        done
+    done
+    for i in {1..30}; do
+        [[ $(ps ax | grep $process | grep -v grep) ]] && sleep 1 || break
+        echo -n "wait $i"
     done
 }
 
@@ -110,24 +111,9 @@ kill_all()
 stop_listening()
 {
     echo "stop_listening(): starts ..."
-    ports="$ports 58090" # Pulsar
-
-    transport_ports=$( grep "host:" ${BOOTSTRAP_CONFIG} | grep -o ":\d\+" | grep -o "\d\+" | tr '\n' ' ' )
-    echo "transport_ports values 0 $BOOTSTRAP_CONFIG"
-    echo "transport_ports values 1 $( grep "host:" ${BOOTSTRAP_CONFIG})"
-    echo "transport_ports values 2 $( grep "host:" ${BOOTSTRAP_CONFIG} | grep -o ":\d\+" )"
-    echo "transport_ports values 3 $( grep "host:" ${BOOTSTRAP_CONFIG} | grep -o ":\d\+" | grep -o "\d\+" )"
-    echo "transport_ports values 4 $( grep "host:" ${BOOTSTRAP_CONFIG} | grep -o ":\d\+" | grep -o "\d\+" | tr '\n' ' ' )"
-    echo "transport_ports values 5 $transport_ports"
-    keeperd_port=$( grep "listenaddress:" ${KEEPERD_CONFIG} | grep -o ":\d\+" | grep -o "\d\+" | tr '\n' ' ' )
-    ports="$ports $transport_ports $keeperd_port"
-
-    for port in $ports
-    do
-        echo "killing process using port '$port'"
-        kill_port $port
-    done
-
+    kill_process "bin/pulsard"
+    kill_process "bin/insolard"
+    kill_process "bin/keeperd"
     echo "stop_listening() end."
 }
 
