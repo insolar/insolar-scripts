@@ -86,7 +86,7 @@ kill_process()
 {
     process=$1
     echo "kill_process(): starts for $process"
-    pids=$(ps ax 2>/dev/null | grep $process | grep -v grep |  awk '{print $1}')
+    pids=$(pgrep $process | awk '{print $1}')
     for pid in $pids
     do
         echo -n "killing pid $pid at "
@@ -94,7 +94,7 @@ kill_process()
         kill $pid || true
     done
     for i in {1..30}; do
-        [[ $(ps ax | grep $process | grep -v grep) ]] && sleep 1 || break
+        [[ $(pgrep $process) ]] && sleep 1 || break
         echo -n "wait $i"
     done
 }
@@ -111,9 +111,9 @@ kill_all()
 stop_listening()
 {
     echo "stop_listening(): starts ..."
-    kill_process "bin/pulsard"
-    kill_process "bin/insolard"
-    kill_process "bin/keeperd"
+    kill_process "pulsard"
+    kill_process "insolard"
+    kill_process "keeperd"
     echo "stop_listening() end."
 }
 
