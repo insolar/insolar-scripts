@@ -82,19 +82,20 @@ build_logger()
     GO111MODULE=off go get github.com/insolar/insolar/scripts/inslogrotator
 }
 
-kill_port()
+kill_process()
 {
-    port=$1
-    pids=$(lsof -i :$port 2>/dev/null | grep "LISTEN\|UDP" | awk '{print $2}')
+    process=$1
+    echo "kill_process(): starts for $process"
+    pids=$(pgrep $process | awk '{print $1}')
     for pid in $pids
     do
         echo -n "killing pid $pid at "
         date
         kill $pid || true
-        for i in {1..30}; do
-            [[ $(lsof -i :${port}) ]] && sleep 1 || break
-            echo -n "wait $i"
-        done
+    done
+    for i in {1..30}; do
+        [[ $(pgrep $process) ]] && sleep 1 || break
+        echo -n "wait $i"
     done
 }
 
@@ -110,18 +111,9 @@ kill_all()
 stop_listening()
 {
     echo "stop_listening(): starts ..."
-    ports="$ports 58090" # Pulsar
-
-    transport_ports=$( grep "host:" ${BOOTSTRAP_CONFIG} | grep -o ":\d\+" | grep -o "\d\+" | tr '\n' ' ' )
-    keeperd_port=$( grep "listenaddress:" ${KEEPERD_CONFIG} | grep -o ":\d\+" | grep -o "\d\+" | tr '\n' ' ' )
-    ports="$ports $transport_ports $keeperd_port"
-
-    for port in $ports
-    do
-        echo "killing process using port '$port'"
-        kill_port $port
-    done
-
+    kill_process "pulsard"
+    kill_process "insolard"
+    kill_process "keeperd"
     echo "stop_listening() end."
 }
 
