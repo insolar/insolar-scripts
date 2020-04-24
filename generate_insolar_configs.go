@@ -15,7 +15,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 
 	"github.com/insolar/insolar/applicationbase/bootstrap"
 	pulsewatcher "github.com/insolar/insolar/cmd/pulsewatcher/config"
@@ -50,14 +52,19 @@ var (
 	keeperdConfigTmpl = "insolar-scripts/insolard/keeperd_template.yaml"
 	keeperdFileName   = withBaseDir("keeperd.yaml")
 
-	insolardDefaultsConfigWithBadger   = "insolar-scripts/insolard/defaults/insolard_badger.yaml"
-	insolardDefaultsConfigWithPostgres = "insolar-scripts/insolard/defaults/insolard_postgres.yaml"
+	insolardDefaultsConfigWithBadger   = "insolard_badger.yaml"
+	insolardDefaultsConfigWithPostgres = "insolard_postgres.yaml"
 )
 
 var (
 	outputDir  string
 	debugLevel string
 )
+
+type ApiExportedConfig struct {
+	ApiExported      string
+	ApiexportedAdmin string
+}
 
 func parseInputParams() {
 	var rootCmd = &cobra.Command{}
@@ -95,6 +102,8 @@ func main() {
 
 	bootstrapConf, err := bootstrap.ParseConfig(bootstrapFileName)
 	check("Can't read bootstrap config", err)
+	apiExportedConf, err := parseConfig(bootstrapFileName)
+	check("Can't read api exported  config", err)
 
 	pwConfig := pulsewatcher.Config{}
 	discoveryNodesConfigs := make([]interface{}, 0, len(bootstrapConf.DiscoveryNodes))
@@ -109,7 +118,7 @@ func main() {
 	for index, node := range bootstrapConf.DiscoveryNodes {
 		nodeIndex := index + 1
 
-		genericConfiguration := createGenericConfigDiscovery(node, nodeIndex, bootstrapConf)
+		genericConfiguration := createGenericConfigDiscovery(node, nodeIndex, bootstrapConf, apiExportedConf)
 
 		switch node.Role {
 		case "light_material":
@@ -219,26 +228,25 @@ func main() {
 	fmt.Println("generate_insolar_configs.go: write to file", pulsewatcherFileName)
 }
 
-func createGenericConfigDiscovery(node bootstrap.Node, nodeIndex int, bootstrapConf *bootstrap.Config) configuration.GenericConfiguration {
+func createGenericConfigDiscovery(node bootstrap.Node, nodeIndex int, bootstrapConf *bootstrap.Config, apiExportedConf *ApiExportedConfig) configuration.GenericConfiguration {
 	conf := configuration.NewGenericConfiguration()
 	conf.Host.Transport.Address = node.Host
 	conf.Host.Transport.Protocol = "TCP"
-
 	conf.APIRunner.Address = fmt.Sprintf(defaultHost+":191%02d", nodeIndex)
-	conf.APIRunner.SwaggerPath = "application/api/spec/api-exported.yaml"
+	conf.APIRunner.SwaggerPath = apiExportedConf.ApiExported
 
 	conf.AvailabilityChecker.Enabled = true
 	conf.AvailabilityChecker.KeeperURL = "http://127.0.0.1:12012/check"
 
 	conf.AdminAPIRunner.Address = fmt.Sprintf(defaultHost+":190%02d", nodeIndex)
-	conf.AdminAPIRunner.SwaggerPath = "application/api/spec/api-exported.yaml"
+	conf.AdminAPIRunner.SwaggerPath = apiExportedConf.ApiexportedAdmin
 
 	conf.Metrics.ListenAddress = fmt.Sprintf(defaultHost+":80%02d", nodeIndex)
 	conf.Introspection.Addr = fmt.Sprintf(defaultHost+":555%02d", nodeIndex)
 
 	conf.Tracer.Jaeger.AgentEndpoint = defaultJaegerEndPoint
 	conf.Log.Level = debugLevel
-	conf.Log.Adapter = "zerolog"
+	conf.Log.Adapter = "zero log"
 	conf.Log.Formatter = "json"
 
 	conf.KeysPath = bootstrapConf.DiscoveryKeysDir + fmt.Sprintf(bootstrapConf.KeysNameFormat, nodeIndex)
@@ -400,4 +408,20 @@ func check(msg string, err error) {
 	logCfg.Formatter = "text"
 	inslog, _ := log.NewGlobalLogger(logCfg)
 	inslog.WithField("error", err).Fatal(msg)
+}
+
+func parseConfig(path string) (*ApiExportedConfig, error) {
+	var conf = &ApiExportedConfig{}
+	v := viper.New()
+	v.SetConfigFile(path)
+	err := v.ReadInConfig()
+	if err != nil {
+		return nil, errors.Wrap(err, "couldn't read config file")
+	}
+	err = v.Unmarshal(conf)
+	if err != nil {
+		return nil, errors.Wrap(err, "couldn't unmarshal yaml to struct")
+	}
+
+	return conf, nil
 }
