@@ -11,7 +11,7 @@ create table last_known_pulse_for_indexes
     pulse_number bigint not null
 );
 
-create unique index last_known_pulse_for_indexes_unique on last_known_pulse_for_indexes (object_id, pulse_number);
+create unique index last_known_pulse_for_indexes_unique on last_known_pulse_for_indexes (object_id);
 
 create table indexes
 (
