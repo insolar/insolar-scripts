@@ -67,6 +67,10 @@ introspection:
   addr: ""
 exporter:
   addr: :5678
+  auth:
+    required: false
+    issuer: ""
+    secret: ""
 bus:
   replytimeout: 15s
 lightchainlimit: 5
