@@ -231,7 +231,7 @@ func createGenericConfigDiscovery(node bootstrap.Node, nodeIndex int, bootstrapC
 	conf.AvailabilityChecker.KeeperURL = "http://127.0.0.1:12012/check"
 
 	conf.AdminAPIRunner.Address = fmt.Sprintf(defaultHost+":190%02d", nodeIndex)
-	conf.AdminAPIRunner.SwaggerPath = "application/api/spec/api-exported.yaml"
+	conf.AdminAPIRunner.SwaggerPath = "application/api/spec/api-exported-internal.yaml"
 
 	conf.Metrics.ListenAddress = fmt.Sprintf(defaultHost+":80%02d", nodeIndex)
 	conf.Introspection.Addr = fmt.Sprintf(defaultHost+":555%02d", nodeIndex)
