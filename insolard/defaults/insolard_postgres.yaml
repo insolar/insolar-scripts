@@ -57,10 +57,10 @@ introspection:
 exporter:
   addr: :5678
   auth:
-    required: true
+    required: false
     issuer: insolar-auth
     secret: 1111111111111111111111111111111111111111111111111111111111111111
-  checkversion: true
+  checkversion: false
 bus:
   replytimeout: 15s
 lightchainlimit: 5
