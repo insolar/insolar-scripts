@@ -72,6 +72,7 @@ exporter:
     issuer: insolar-auth
     secret: 1111111111111111111111111111111111111111111111111111111111111111
   checkversion: false
+  maxconcurrentstreams: 2
 bus:
   replytimeout: 15s
 lightchainlimit: 5
