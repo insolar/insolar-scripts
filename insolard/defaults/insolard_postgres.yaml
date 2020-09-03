@@ -62,6 +62,7 @@ exporter:
     secret: 1111111111111111111111111111111111111111111111111111111111111111
   checkversion: false
   ratelimit:
+    #    requests per second for unary and server_stream RPCs
     in:
       global: 3000
       perclient:
@@ -69,6 +70,7 @@ exporter:
         PulseExport: 300
         PulseTopSyncPulse: 300
         PulseNextFinalizedPulse: 300
+    #        responses per second for server_stream RPCs
     out:
       global: 20000
       perclient:
